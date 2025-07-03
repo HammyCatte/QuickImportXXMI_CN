@@ -4,7 +4,7 @@ from pathlib import Path
 import importlib
 
 bl_info = {
-    "name": "XXMI Scripts & Quick Import",
+    "name": "XXMI 工具箱 & 快速导入",
     "author": "Gustav0, LeoTorreZ", 
     "version": (3, 0, 6),
     "blender": (3, 6, 2),

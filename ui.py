@@ -7,11 +7,11 @@ from .tools.tools_operators import *
 from . import addon_updater_ops
 
 class XXMI_TOOLS_PT_main_panel(bpy.types.Panel):
-    bl_label = "ToolsXXMI"
+    bl_label = "XXMI工具箱"
     bl_idname = "XXMI_TOOLS_PT_MainPanel"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'XXMI Scripts'
+    bl_category = 'XXMI工具箱'
     bl_options = {'DEFAULT_CLOSED'}
     
     def draw(self, context):
@@ -19,107 +19,108 @@ class XXMI_TOOLS_PT_main_panel(bpy.types.Panel):
         xxmi = context.scene.xxmi_scripts_settings
         
 
-        # GitHub link button and version info
-        # box = layout.box()
-        # github_row = box.row(align=True)
-        # github_row.label(text=f"XXMI Scripts | Current Version: v{'.'.join(map(str, bl_info['version']))}", icon='INFO')
-        # github_row.alignment = 'EXPAND'
-        # github_row.operator("wm.url_open", text="", icon='URL', emboss=False).url = "https://github.com/Seris0/Gustav0/tree/main/Addons/QuickImportXXMI"
+        # GitHub链接和版本信息
+        box = layout.box()
+        github_row = box.row(align=True)
+        github_row.label(text=f"XXMI工具箱 & 快速导入 | 当前版本: v{'.'.join(map(str, bl_info['version']))}", icon='INFO')
+        github_row.alignment = 'EXPAND'
+        github_row.operator("wm.url_open", text="", icon='URL', emboss=False).url = "https://github.com/Seris0/Gustav0/tree/main/Addons/QuickImportXXMI"
 
-        # Main Tools Section
+        # 主工具模块
         box = layout.box()
         row = box.row()
-        row.prop(xxmi, "show_vertex", icon="TRIA_DOWN" if xxmi.show_vertex else "TRIA_RIGHT", emboss=False, text="Main Tools")
+        row.prop(xxmi, "show_vertex", icon="TRIA_DOWN" if xxmi.show_vertex else "TRIA_RIGHT", emboss=False, text="主工具")
         if xxmi.show_vertex:
             col = box.column(align=True)
-            col.label(text="Vertex Groups", icon='GROUP_VERTEX')
-            col.prop(xxmi, "Largest_VG", text="Largest VG")
-            col.operator("XXMI_TOOLS.fill_vgs", text="Fill Vertex Groups", icon='ADD')
-            col.operator("XXMI_TOOLS.remove_unused_vgs", text="Remove Unused VG's", icon='X')
-            col.operator("XXMI_TOOLS.remove_all_vgs", text="Remove All VG's", icon='CANCEL')
-            col.operator("object.separate_by_material_and_rename", text="Separate by Material", icon='MATERIAL')
+            col.label(text="顶点组管理", icon='GROUP_VERTEX')
+            col.prop(xxmi, "Largest_VG", text="最大顶点组")
+            col.operator("XXMI_TOOLS.fill_vgs", text="填充顶点组", icon='ADD')
+            col.operator("XXMI_TOOLS.remove_unused_vgs", text="移除未使用顶点组", icon='X')
+            col.operator("XXMI_TOOLS.remove_all_vgs", text="清除所有顶点组", icon='CANCEL')
+            col.operator("object.separate_by_material_and_rename", text="按材质分离", icon='MATERIAL')
 
             col.separator()
-            col.label(text="Merge Vertex Groups", icon='AUTOMERGE_ON')
+            col.label(text="合并顶点组", icon='AUTOMERGE_ON')
             col.prop(xxmi, "merge_mode", text="")
             if xxmi.merge_mode == 'MODE1':
-                col.prop(xxmi, "vertex_groups", text="Vertex Groups")
+                col.prop(xxmi, "vertex_groups", text="顶点组列表")
             elif xxmi.merge_mode == 'MODE2':
                 row = col.row(align=True)
-                row.prop(xxmi, "smallest_group_number", text="From")
-                row.prop(xxmi, "largest_group_number", text="To")
-            col.operator("object.merge_vertex_groups", text="Merge Vertex Groups")
+                row.prop(xxmi, "smallest_group_number", text="起始编号")
+                row.prop(xxmi, "largest_group_number", text="结束编号")
+            col.operator("object.merge_vertex_groups", text="执行合并")
 
-        # Vertex Group REMAP Section
+        # 顶点组重映射模块
         box = layout.box()
         row = box.row()
-        row.prop(xxmi, "show_remap", icon="TRIA_DOWN" if xxmi.show_remap else "TRIA_RIGHT", emboss=False, text="Vertex Group REMAP")
+        row.prop(xxmi, "show_remap", icon="TRIA_DOWN" if xxmi.show_remap else "TRIA_RIGHT", emboss=False, text="顶点组重映射")
         if xxmi.show_remap:
             col = box.column(align=True)
-            col.prop_search(xxmi, "vgm_source_object", bpy.data, "objects", text="Source")
+            col.prop_search(xxmi, "vgm_source_object", bpy.data, "objects", text="源对象")
             col.separator()
-            col.prop_search(xxmi, "vgm_destination_object", bpy.data, "objects", text="Target")
+            col.prop_search(xxmi, "vgm_destination_object", bpy.data, "objects", text="目标对象")
             col.separator()
-            col.operator("object.vertex_group_remap", text="Run Remap", icon='FILE_REFRESH')
+            col.operator("object.vertex_group_remap", text="执行重映射", icon='FILE_REFRESH')
 
-        # Transfer Properties Section
+        # 属性转移模块
         box = layout.box()
-        box.prop(xxmi, "show_transfer", icon="TRIA_DOWN" if xxmi.show_transfer else "TRIA_RIGHT", emboss=False, text="Transfer Properties")
+        box.prop(xxmi, "show_transfer", icon="TRIA_DOWN" if xxmi.show_transfer else "TRIA_RIGHT", emboss=False, text="属性转移")
         if xxmi.show_transfer:
-            box.label(text="Transfer Properties", icon='OUTLINER_OB_GROUP_INSTANCE')  
+            box.label(text="跨对象属性同步", icon='OUTLINER_OB_GROUP_INSTANCE')  
             row = box.row()
-            row.prop(xxmi, "transfer_mode", text="Transfer Mode")
+            row.prop(xxmi, "transfer_mode", text="转移模式")
             if xxmi.transfer_mode == 'COLLECTION':
                 row = box.row()
-                row.prop_search(xxmi, "base_collection", bpy.data, "collections", text="Original Properties:")
+                row.prop_search(xxmi, "base_collection", bpy.data, "collections", text="原始属性")
                 row = box.row()
-                row.prop_search(xxmi, "target_collection", bpy.data, "collections", text="Missing Properties:")
+                row.prop_search(xxmi, "target_collection", bpy.data, "collections", text="缺失属性")
             else:
                 row = box.row()
-                row.prop_search(xxmi, "base_objectproperties", bpy.data, "objects", text="Original Mesh:")
+                row.prop_search(xxmi, "base_objectproperties", bpy.data, "objects", text="源对象")
                 row = box.row()
-                row.prop_search(xxmi, "target_objectproperties", bpy.data, "objects", text="Modded Mesh:")
+                row.prop_search(xxmi, "target_objectproperties", bpy.data, "objects", text="目标对象")
             row = box.row()
-            row.operator("object.transfer_properties", text="Transfer Properties", icon='OUTLINER_OB_GROUP_INSTANCE')
+            row.operator("object.transfer_properties", text="执行属性转移", icon='OUTLINER_OB_GROUP_INSTANCE')
 
 class XXMI_Scripts_Settings(bpy.types.PropertyGroup):
-    show_vertex: bpy.props.BoolProperty(name="Show Vertex", default=False) #type: ignore        
-    show_remap: bpy.props.BoolProperty(name="Show Remap", default=False) #type: ignore
-    show_transfer: bpy.props.BoolProperty(name="Show Transfer", default=False) #type: ignore
-    base_collection: bpy.props.PointerProperty(type=bpy.types.Collection, description="Base Collection") #type: ignore
-    target_collection: bpy.props.PointerProperty(type=bpy.types.Collection, description="Target Collection") #type: ignore
-    base_objectproperties: bpy.props.PointerProperty(type=bpy.types.Object, description="Base Object") #type: ignore
-    target_objectproperties: bpy.props.PointerProperty(type=bpy.types.Object, description="Target Object") #type: ignore    
+    show_vertex: bpy.props.BoolProperty(name="显示顶点工具", default=False) #type: ignore        
+    show_remap: bpy.props.BoolProperty(name="显示重映射", default=False) #type: ignore
+    show_transfer: bpy.props.BoolProperty(name="显示属性转移", default=False) #type: ignore
+    base_collection: bpy.props.PointerProperty(type=bpy.types.Collection, description="原始集合") #type: ignore
+    target_collection: bpy.props.PointerProperty(type=bpy.types.Collection, description="目标集合") #type: ignore
+    base_objectproperties: bpy.props.PointerProperty(type=bpy.types.Object, description="源对象") #type: ignore
+    target_objectproperties: bpy.props.PointerProperty(type=bpy.types.Object, description="目标对象") #type: ignore    
     transfer_mode: bpy.props.EnumProperty(
         items=[
-            ('COLLECTION', 'Collection Transfer', 'Transfer properties between collections'),
-            ('MESH', 'Mesh Transfer', 'Transfer properties between meshes')
+            ('COLLECTION', '集合间转移', '在集合之间转移属性'),
+            ('MESH', '网格间转移', '在网格对象之间转移属性')
         ],
         default='MESH',
-        description="Mode of Transfer"
+        description="属性转移模式"
     ) #type: ignore
-    Largest_VG: bpy.props.IntProperty(description="Value for Largest Vertex Group") #type: ignore
-    vgm_source_object: bpy.props.PointerProperty(type=bpy.types.Object, description="Source Object for Vertex Group Mapping") #type: ignore
-    vgm_destination_object: bpy.props.PointerProperty(type=bpy.types.Object, description="Destination Object for Vertex Group Mapping") #type: ignore   
+    Largest_VG: bpy.props.IntProperty(description="最大顶点组数值") #type: ignore
+    vgm_source_object: bpy.props.PointerProperty(type=bpy.types.Object, description="顶点组映射源对象") #type: ignore
+    vgm_destination_object: bpy.props.PointerProperty(type=bpy.types.Object, description="顶点组映射目标对象") #type: ignore   
     merge_mode: bpy.props.EnumProperty(items=[
-        ('MODE1', 'Mode 1: Single VG', 'Merge based on specific vertex groups'),
-        ('MODE2', 'Mode 2: By Range ', 'Merge based on a range of vertex groups'),
-        ('MODE3', 'Mode 3: All VG', 'Merge all vertex groups')], #type: ignore
-        default='MODE3')
-    vertex_groups: bpy.props.StringProperty(name="Vertex Groups", default="") #type: ignore
-    smallest_group_number: bpy.props.IntProperty(name="Smallest Group", default=0) #type: ignore
-    largest_group_number: bpy.props.IntProperty(name="Largest Group", default=999) #type: ignore
+        ('MODE1', '模式1：指定顶点组', '合并特定顶点组'),
+        ('MODE2', '模式2：编号范围', '按编号范围合并顶点组'),
+        ('MODE3', '模式3：全部合并', '合并所有顶点组')], #type: ignore
+        default='MODE3',
+        description="顶点组合并模式") #type: ignore
+    vertex_groups: bpy.props.StringProperty(name="顶点组列表", default="") #type: ignore
+    smallest_group_number: bpy.props.IntProperty(name="最小组编号", default=0) #type: ignore
+    largest_group_number: bpy.props.IntProperty(name="最大组编号", default=999) #type: ignore
 
 class QuickImportSettings(bpy.types.PropertyGroup):
     tri_to_quads: BoolProperty(
-        name="Tri to Quads",
+        name="三角面转四边面",
         default=False,
-        description="Enable Tri to Quads"
+        description="启用三角面转四边面功能"
     )#type: ignore 
     merge_by_distance: BoolProperty(
-        name="Merge by Distance",
+        name="顶点按距离合并",
         default=False,
-        description="Enable Merge by Distance"
+        description="启用顶点自动按距离合并"
     )#type: ignore 
     flip_mesh: BoolProperty(
         name="Flip Mesh",
@@ -127,19 +128,19 @@ class QuickImportSettings(bpy.types.PropertyGroup):
         description="Flips mesh over x-axis on import"
     ) #type: ignore 
     reset_rotation: BoolProperty(
-        name="Reset Rotation (ZZZ)",
+        name="重置旋转(ZZZ)",
         default=False,
-        description="Reset the rotation of the object upon import"
+        description="导入时重置物体旋转"
     ) #type: ignore 
     import_textures: BoolProperty(
-        name="Import Textures",
+        name="导入贴图",
         default=True,
-        description="Apply Materials and Textures"
+        description="自动应用材质和贴图"
     ) #type: ignore
     hide_textures: BoolProperty(
-        name="Hide Textures",
+        name="隐藏贴图",
         default=False,
-        description="Hide Textures"
+        description="隐藏贴图显示"
     ) #type: ignore
     
     def update_collection_settings(self, context):
@@ -157,65 +158,65 @@ class QuickImportSettings(bpy.types.PropertyGroup):
             self.create_collection = False
 
     create_collection: BoolProperty(
-        name="Create Collection",
+        name="创建集合",
         default=True,
-        description="Create a new collection based on the folder name",
+        description="根据文件夹名称创建新集合",
         update=update_create_collection
     ) #type: ignore
     create_mesh_collection: BoolProperty(
-        name="Per Component Collection",
+        name="创建网格集合",
         default=False,
-        description="Create a new collection for mesh data and custom properties (Drawindexed Export)",
+        description="为网格数据和自定义属性创建新集合",
         update=update_create_mesh_collection
     ) #type: ignore
     import_diffuse: BoolProperty(
         name="Diffuse",
         default=True,
-        description="Import Diffuse Maps"
+        description="导入Diffuse贴图"
     ) #type: ignore 
     import_lightmap: BoolProperty(
         name="LightMap",
         default=False,
-        description="Import LightMaps"
+        description="导入LightMap贴图"
     ) #type: ignore 
     import_normalmap: BoolProperty(
         name="NormalMap",
         default=False,
-        description="Import NormalMaps"
+        description="导入NormalMap贴图"
     ) #type: ignore 
     import_materialmap: BoolProperty(
         name="MaterialMap",
         default=False,
-        description="Import MaterialMaps"
+        description="导入MaterialMap贴图"
     ) #type: ignore 
     import_stockingmap: BoolProperty(
         name="StockingMap",
         default=False,
-        description="Import StockingMaps"
+        description="导入StockingMap贴图"
     )  # type: ignore
 
     import_face: BoolProperty(
-        name="Import Face",
+        name="自动导入面部",
         default=False,
-        description="Import matching face file automatically"
+        description="自动导入匹配的面部文件"
     ) #type: ignore
     import_armature: BoolProperty(
-        name="Import Armature",
+        name="自动导入骨架",
         default=False,
-        description="Import matching armature file automatically"
+        description="自动导入匹配的骨架文件"
     ) #type: ignore
     hide_advanced: BoolProperty(
-        name="Hide Advanced",
+        name="隐藏高级设置",
         default=False,
-        description="Hide Advanced Settings"
+        description="隐藏高级设置选项"
     ) #type: ignore
 
 class XXMI_TOOLS_PT_quick_import_panel(bpy.types.Panel):
-    bl_label = "QuickImportXXMI"
+    bl_label = "快速导入"
     bl_idname = "XXMI_TOOLS_PT_QuickImportPanel"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'XXMI Scripts'
+    bl_category = 'XXMI工具箱'
  
 
 
@@ -234,13 +235,13 @@ class XXMI_TOOLS_PT_quick_import_panel(bpy.types.Panel):
         
         row = col.row(align=True)
         row.scale_y = 1.3
-        row.operator("import_scene.3dmigoto_frame_analysis", text="Setup Character", icon='IMPORT')
+        row.operator("import_scene.3dmigoto_frame_analysis", text="导入帧分析提取模型", icon='IMPORT')
         row = col.row(align=True)
         row.scale_y = 1.3
-        row.operator("import_scene.3dmigoto_raw", text="Setup Character Raw (ib + vb)", icon='IMPORT')
+        row.operator("import_scene.3dmigoto_raw", text="导入原始缓冲区模型(ib + vb)", icon='IMPORT')
         
         col.separator()
-        col.label(text="Import Options:", icon='SETTINGS')
+        col.label(text="导入选项:", icon='SETTINGS')
         row = col.row(align=True)
         row.prop(cfg, "import_textures", toggle=True)
         row.prop(cfg, "merge_by_distance", toggle=True)
@@ -252,11 +253,11 @@ class XXMI_TOOLS_PT_quick_import_panel(bpy.types.Panel):
         col.prop(cfg, "create_collection", toggle=True)
         col.prop(cfg, "create_mesh_collection", toggle=True)
 
-        # Face Import Section
+        # 高级导入模块
         col.separator()
         row = col.row(align=True)
-        row.label(text="Advanced Import:", icon='FACE_MAPS')
-        row.prop(cfg, "hide_advanced", text="Show Advanced Import" if cfg.hide_advanced else "Hide Advanced Import", 
+        row.label(text="高级导入:", icon='FACE_MAPS')
+        row.prop(cfg, "hide_advanced", text="显示高级导入" if cfg.hide_advanced else "隐藏高级导入", 
                  icon='HIDE_OFF' if cfg.hide_advanced else 'HIDE_ON', toggle=True)
         
         if cfg.hide_advanced:
@@ -271,9 +272,9 @@ class XXMI_TOOLS_PT_quick_import_panel(bpy.types.Panel):
         if cfg.import_textures:
             col.separator()
             row = col.row(align=True)
-            row.label(text="Texture Import:", icon='TEXTURE')
-            row.prop(cfg, "hide_textures", text="Show Texture Settings" if cfg.hide_textures else " Hide Texture Settings",
-                      icon='HIDE_OFF' if cfg.hide_textures else 'HIDE_ON', toggle=True)
+            row.label(text="贴图导入:", icon='TEXTURE')
+            row.prop(cfg, "hide_textures", text="显示贴图设置" if cfg.hide_textures else "隐藏贴图设置",
+                     icon='HIDE_OFF' if cfg.hide_textures else 'HIDE_ON', toggle=True)
             
             if cfg.hide_textures:
                 row = col.row(align=True)
@@ -289,16 +290,16 @@ class XXMI_TOOLS_PT_quick_import_panel(bpy.types.Panel):
         col.separator()
         row = col.row(align=True)
         row.scale_y = 1.2
-        row.operator("quickimport.save_preferences", icon='FILE_TICK')
+        row.operator("quickimport.save_preferences", text="保存偏好设置", icon='FILE_TICK')
 
 class DemoUpdaterPanel(bpy.types.Panel):
-	"""Panel to demo popup notice and ignoring functionality"""
-	bl_label = "AutoUpdaterXXMI"
+	"""用于演示弹出通知及忽略功能的面板"""
+	bl_label = "自动更新"
 	bl_idname = "OBJECT_PT_DemoUpdaterPanel_hello"
 	bl_space_type = 'VIEW_3D'
 	bl_region_type = 'TOOLS' if bpy.app.version < (2, 80) else 'UI'
 	bl_context = "objectmode"
-	bl_category = "XXMI Scripts"
+	bl_category = "XXMI工具箱"
 	bl_options = {'DEFAULT_CLOSED'}
 
 	def draw(self, context: bpy.types.Context) -> None:
@@ -308,39 +309,39 @@ class DemoUpdaterPanel(bpy.types.Panel):
 
 @addon_updater_ops.make_annotations
 class UpdaterPreferences(bpy.types.AddonPreferences):
-	"""Demo bare-bones preferences"""
+	"""基础插件更新偏好设置"""
 	bl_idname = __package__
 
-	# Addon updater preferences.
+	# 插件更新器偏好设置
 
 	auto_check_update = bpy.props.BoolProperty(
-		name="Auto-check for Update",
-		description="If enabled, auto-check for updates using an interval",
-		default=True)
+		name="自动检查更新",
+		description="启用后，将按设定间隔自动检查更新",
+		default=False)
 
 	updater_interval_months = bpy.props.IntProperty(
-		name='Months',
-		description="Number of months between checking for updates",
+		name='月数',
+		description="检查更新间隔的月数",
 		default=0,
 		min=0)
 
 	updater_interval_days = bpy.props.IntProperty(
-		name='Days',
-		description="Number of days between checking for updates",
-		default=1,
+		name='天数',
+		description="检查更新间隔的天数",
+		default=7,
 		min=0,
 		max=31)
 
 	updater_interval_hours = bpy.props.IntProperty(
-		name='Hours',
-		description="Number of hours between checking for updates",
+		name='小时',
+		description="检查更新间隔的小时数",
 		default=0,
 		min=0,
 		max=23)
 
 	updater_interval_minutes = bpy.props.IntProperty(
-		name='Minutes',
-		description="Number of minutes between checking for updates",
+		name='分钟',
+		description="检查更新间隔的分钟数",
 		default=0,
 		min=0,
 		max=59)

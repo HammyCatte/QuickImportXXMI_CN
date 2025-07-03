@@ -48,11 +48,10 @@ import addon_utils #type: ignore
 
 
 class SingletonUpdater:
-    """Addon updater service class.
+    """插件更新程序服务类
 
-    This is the singleton class to instance once and then reference where
-    needed throughout the addon. It implements all the interfaces for running
-    updates.
+    这是一个单例类，实例化一次后即可在整个插件中根据需要进行引用
+    它实现了运行更新所需的所有接口
     """
     def __init__(self):
 
@@ -130,15 +129,15 @@ class SingletonUpdater:
         self._select_link = select_link_function
 
     def print_trace(self):
-        """Print handled exception details when use_print_traces is set"""
+        """设置 use_print_traces 时打印已处理的异常详细信息"""
         if self._use_print_traces:
             traceback.print_exc()
 
     def print_verbose(self, msg):
-        """Print out a verbose logging message if verbose is true."""
+        """如果 verbose 为真，则打印详细的日志消息。"""
         if not self._verbose:
             return
-        print("{} addon: ".format(self.addon) + msg)
+        print("{} 插件：".format(self.addon) + msg)
 
     # -------------------------------------------------------------------------
     # Getters and setters
@@ -797,8 +796,8 @@ class SingletonUpdater:
         except Exception as e:
             self._error = "Error retrieving download, bad link?"
             self._error_msg = "Error: {}".format(e)
-            print("Error retrieving download, bad link?")
-            print("Error: {}".format(e))
+            print("下载失败，链接可能无效")
+            print("错误: {}".format(e))
             self.print_trace()
             return False
 
@@ -836,14 +835,14 @@ class SingletonUpdater:
                                 ignore=shutil.ignore_patterns(
                                     *self._backup_ignore_patterns))
             except:
-                print("Failed to create backup, still attempting update.")
+                print("备份创建失败，仍将继续尝试更新")
                 self.print_trace()
                 return
         else:
             try:
                 shutil.copytree(self._addon_root, tempdest)
             except:
-                print("Failed to create backup, still attempting update.")
+                print("备份创建失败，仍将继续尝试更新")
                 self.print_trace()
                 return
         shutil.move(tempdest, local)
@@ -895,7 +894,7 @@ class SingletonUpdater:
         try:
             os.mkdir(outdir)
         except Exception as err:
-            print("Error occurred while making extract dir:")
+            print("创建解压目录时发生错误：")
             print(str(err))
             self.print_trace()
             self._error = "Install failed"
@@ -903,7 +902,7 @@ class SingletonUpdater:
             return -1
 
         if not os.path.isdir(outdir):
-            print("Failed to create source directory")
+            print("创建源目录失败")
             self._error = "Install failed"
             self._error_msg = "Failed to create extract directory"
             return -1
@@ -953,7 +952,7 @@ class SingletonUpdater:
         if not os.path.isdir(unpath):
             self._error = "Install failed"
             self._error_msg = "Extracted path does not exist"
-            print("Extracted path does not exist: ", unpath)
+            print("解压路径不存在：", unpath)
             return -1
 
         if self._subfolder_path:
@@ -972,8 +971,8 @@ class SingletonUpdater:
             # Smarter check for additional sub folders for a single folder
             # containing the __init__.py file.
             if not os.path.isfile(os.path.join(unpath, "__init__.py")):
-                print("Not a valid addon found")
-                print("Paths:")
+                print("未找到有效插件")
+                print("路径：")
                 print(dirlist)
                 self._error = "Install failed"
                 self._error_msg = "No __init__ file found in new source"
@@ -1055,7 +1054,7 @@ class SingletonUpdater:
                             os.remove(fl)
                             self.print_verbose("Pre-removed file " + file)
                         except OSError:
-                            print("Failed to pre-remove " + file)
+                            print("预删除失败：" + file)
                             self.print_trace()
 
         # Walk through the temp addon sub folder for replacements
@@ -1112,7 +1111,7 @@ class SingletonUpdater:
         # if post_update false, skip this function
         # else, unload/reload addon & trigger popup
         if not self._auto_reload_post_update:
-            print("Restart blender to reload addon and complete update")
+            print("请重启Blender以重新加载插件并完成更新")
             return
 
         self.print_verbose("Reloading addon...")
@@ -1125,12 +1124,12 @@ class SingletonUpdater:
             bpy.ops.wm.addon_disable(module=self._addon_package)
             bpy.ops.wm.addon_refresh()
             bpy.ops.wm.addon_enable(module=self._addon_package)
-            print("2.7 reload complete")
+            print("2.7版本重载完成")
         else:  # 2.8
             bpy.ops.preferences.addon_disable(module=self._addon_package)
             bpy.ops.preferences.addon_refresh()
             bpy.ops.preferences.addon_enable(module=self._addon_package)
-            print("2.8 reload complete")
+            print("2.8版本重载完成")
 
     # -------------------------------------------------------------------------
     # Other non-api functions and setups
@@ -1208,7 +1207,7 @@ class SingletonUpdater:
             self.print_verbose("Skipping async check, already started")
             # already running the bg thread
         elif self._update_ready is None:
-            print("{} updater: Running background check for update".format(
+            print("{} 更新模块：正在后台检查更新".format(
                   self.addon))
             self.start_async_check_update(False, callback)
 
@@ -1417,7 +1416,7 @@ class SingletonUpdater:
 
             res = self.stage_repository(self._update_link)
             if not res:
-                print("Error in staging repository: " + str(res))
+                print("暂存仓库错误：" + str(res))
                 if callback is not None:
                     callback(self._addon_package, self._error_msg)
                 return self._error_msg
@@ -1435,7 +1434,7 @@ class SingletonUpdater:
 
             res = self.stage_repository(self._update_link)
             if not res:
-                print("Error in staging repository: " + str(res))
+                print("暂存仓库错误：" + str(res))
                 if callback:
                     callback(self._addon_package, self._error_msg)
                 return self._error_msg
@@ -1490,7 +1489,7 @@ class SingletonUpdater:
         except FileNotFoundError:
             pass
         except Exception as err:
-            print("Other OS error occurred while trying to rename old JSON")
+            print("重命名旧JSON文件时发生系统错误")
             print(err)
             self.print_trace()
         return json_path
@@ -1535,7 +1534,7 @@ class SingletonUpdater:
 
         jpath = self.get_json_path()
         if not os.path.isdir(os.path.dirname(jpath)):
-            print("State error: Directory does not exist, cannot save json: ",
+            print("状态错误：目录不存在，无法保存json：",
                   os.path.basename(jpath))
             return
         try:
@@ -1543,7 +1542,7 @@ class SingletonUpdater:
                 data_out = json.dumps(self._json, indent=4)
                 outf.write(data_out)
         except:
-            print("Failed to open/save data to json: ", jpath)
+            print("无法打开/保存数据到 json：", jpath)
             self.print_trace()
         self.print_verbose("Wrote out updater JSON settings with content:")
         self.print_verbose(str(self._json))
@@ -1587,7 +1586,7 @@ class SingletonUpdater:
         try:
             self.check_for_update(now=now)
         except Exception as exception:
-            print("Checking for update error:")
+            print("检查更新错误：")
             print(exception)
             self.print_trace()
             if not self._error:

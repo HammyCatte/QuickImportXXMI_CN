@@ -8,8 +8,8 @@ import numpy as np
 
 class OBJECT_OT_transfer_properties(bpy.types.Operator):
     bl_idname = "object.transfer_properties"
-    bl_label = "Transfer Properties"
-    bl_description = "Transfer custom properties and transformation data (location, rotation, scale) from one object to another or between collections."
+    bl_label = "转移属性"
+    bl_description = "转移自定义属性及变换数据（位置/旋转/缩放），支持对象间或集合间的数据迁移"
 
     def execute(self, context):
         xxmi = context.scene.xxmi_scripts_settings
@@ -21,8 +21,8 @@ class OBJECT_OT_transfer_properties(bpy.types.Operator):
 
             if not base_collection or not target_collection:
                 self.report({'ERROR'}, 
-                    "Invalid Collection(s) selected.\n"
-                    "Please make sure you have selected valid collections for both 'Original Properties' and 'Missing Properties' in the panel.")
+                    "无效的集合选择\n"
+                    "请确保在面板中为'原始属性'和'缺失属性'选择了有效集合")
                 return {'CANCELLED'}
 
             base_prefix_dict = {}
@@ -46,15 +46,15 @@ class OBJECT_OT_transfer_properties(bpy.types.Operator):
                     target_obj.scale = base_obj.scale  
 
                     log_message = (
-                        f"Transferred properties from '{base_obj.name}' to '{target_obj.name}':\n"
-                        f"  Location: {target_obj.location}\n"
-                        f"  Rotation: {target_obj.rotation_euler}\n"
-                        f"  Scale: {target_obj.scale}"
+                        f"已从'{base_obj.name}'转移属性至'{target_obj.name}':\n"
+                        f"  位置: {target_obj.location}\n"
+                        f"  旋转: {target_obj.rotation_euler}\n"
+                        f"  缩放: {target_obj.scale}"
                     )
                     print(log_message)
                     self.report({'INFO'}, log_message)
 
-            self.report({'INFO'}, "Transfer completed for matching objects in the collections.")
+            self.report({'INFO'}, "集合中匹配对象的属性转移完成")
 
         else:
             base_obj = xxmi.base_objectproperties    
@@ -62,8 +62,8 @@ class OBJECT_OT_transfer_properties(bpy.types.Operator):
 
             if not base_obj or not target_obj:
                 self.report({'ERROR'}, 
-                    "Invalid Mesh(es) selected.\n"
-                    "Please ensure you have selected valid objects for both 'Original Mesh' and 'Modded Mesh' in the panel.")
+                    "无效的网格选择\n"
+                    "请确保在面板中为'原始网格'和'修改网格'选择了有效对象")
                 return {'CANCELLED'}
 
             for key in list(target_obj.keys()):
@@ -78,10 +78,10 @@ class OBJECT_OT_transfer_properties(bpy.types.Operator):
             target_obj.scale = base_obj.scale  
 
             log_message = (
-                f"Transferred properties from '{base_obj.name}' to '{target_obj.name}':\n"
-                f"  Location: {target_obj.location}\n"
-                f"  Rotation: {target_obj.rotation_euler}\n"
-                f"  Scale: {target_obj.scale}"
+                f"已从'{base_obj.name}'转移属性至'{target_obj.name}':\n"
+                f"  位置: {target_obj.location}\n"
+                f"  旋转: {target_obj.rotation_euler}\n"
+                f"  缩放: {target_obj.scale}"
             )
             print(log_message)
             self.report({'INFO'}, log_message)
@@ -91,8 +91,8 @@ class OBJECT_OT_transfer_properties(bpy.types.Operator):
 # MARK: MERGE VGS
 class OBJECT_OT_merge_vertex_groups(bpy.types.Operator):
     bl_idname = "object.merge_vertex_groups"
-    bl_label = "Merge Vertex Groups"
-    bl_description = "Merge the VG's based on the selected mode"
+    bl_label = "合并顶点组"
+    bl_description = "根据选定模式合并顶点组"
 
     def execute(self, context):
         xxmi = context.scene.xxmi_scripts_settings
@@ -111,11 +111,11 @@ class OBJECT_OT_merge_vertex_groups(bpy.types.Operator):
         elif mode == 'MODE3':
             vgroup_names = list(set(x.name.rsplit('.',1)[0] for y in selected_obj for x in y.vertex_groups))
         else:
-            self.report({'ERROR'}, "Mode not recognized, exiting")
+            self.report({'ERROR'}, "模式无法识别，操作终止")
             return {'CANCELLED'}
 
         if not vgroup_names:
-            self.report({'ERROR'}, "No vertex groups found, please double check an object is selected and required data has been entered")
+            self.report({'ERROR'}, "未找到顶点组，请检查对象选择及数据输入")
             return {'CANCELLED'}
 
         for cur_obj in selected_obj:
@@ -147,7 +147,7 @@ class OBJECT_OT_merge_vertex_groups(bpy.types.Operator):
         return {'FINISHED'}
 
 class XXMI_TOOLS_OT_remove_all_vgs(bpy.types.Operator):
-    bl_label = "Remove All VG's"
+    bl_label = "删除所有顶点组"
     bl_idname = "xxmi_tools.remove_all_vgs"
    
 
@@ -161,16 +161,16 @@ class XXMI_TOOLS_OT_remove_all_vgs(bpy.types.Operator):
         return {'FINISHED'}
 
 class XXMI_TOOLS_OT_fill_vgs(bpy.types.Operator):
-    bl_label = "Fill Vertex Groups"
+    bl_label = "填充顶点组"
     bl_idname = "xxmi_tools.fill_vgs"
-    bl_description = "Fill the VG's based on Largest input and sort the VG's for all selected mesh objects"
+    bl_description = "根据最大编号填充并排序选中网格的顶点组"
 
     def execute(self, context):
         largest = context.scene.xxmi_scripts_settings.Largest_VG
         selected_objects = [obj for obj in bpy.context.selected_objects if obj.type == 'MESH']
 
         if not selected_objects:
-            self.report({'ERROR'}, "No mesh objects selected")
+            self.report({'ERROR'}, "未选择网格对象")
             return {'CANCELLED'}
 
         for ob in selected_objects:
@@ -181,7 +181,7 @@ class XXMI_TOOLS_OT_fill_vgs(bpy.types.Operator):
                     if int(vg.name.rsplit(".",1)[0]) > largest:
                         largest = int(vg.name.rsplit(".",1)[0])
                 except ValueError:
-                    print(f"Vertex group '{vg.name}' not named as integer, skipping")
+                    print(f"顶点组'{vg.name}'非数字命名，已跳过")
 
             missing = set([f"{i}" for i in range(largest + 1)]) - set([x.name.split(".")[0] for x in ob.vertex_groups])
             for number in missing:
@@ -190,13 +190,13 @@ class XXMI_TOOLS_OT_fill_vgs(bpy.types.Operator):
             bpy.context.view_layer.objects.active = ob
             bpy.ops.object.vertex_group_sort()
 
-        self.report({'INFO'}, f"Filled and sorted vertex groups for {len(selected_objects)} objects")
+        self.report({'INFO'}, f"已为{len(selected_objects)}个对象填充并排序顶点组")
         return {'FINISHED'}
 
 class XXMI_TOOLS_OT_remove_unused_vgs(bpy.types.Operator):
-    bl_label = "Remove Unused VG's"
+    bl_label = "移除未使用顶点组"
     bl_idname = "xxmi_tools.remove_unused_vgs"
-    bl_description = "Remove all Empty VG's"
+    bl_description = "移除所有空顶点组"
 
     def execute(self, context):
         if bpy.context.active_object:
@@ -216,14 +216,14 @@ class XXMI_TOOLS_OT_remove_unused_vgs(bpy.types.Operator):
 
             return {'FINISHED'}
         else:
-            self.report({'ERROR'}, "No objects selected")
+            self.report({'ERROR'}, "未选择对象")
             return {'CANCELLED'}
         
 class OBJECT_OT_vertex_group_remap(bpy.types.Operator):
     bl_idname = "object.vertex_group_remap"
-    bl_label = "Vertex Group Remap"
+    bl_label = "顶点组重映射"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = "Remap the vertex groups between two selected objects"
+    bl_description = "在两个选定对象之间重新映射顶点组"
 
     def execute(self, context):
         xxmi = context.scene.xxmi_scripts_settings
@@ -231,26 +231,26 @@ class OBJECT_OT_vertex_group_remap(bpy.types.Operator):
         destination = xxmi.vgm_destination_object
 
         if not source or not destination:
-            self.report({'ERROR'}, "Please, Select Source and Target object")
+            self.report({'ERROR'}, "请选择源对象和目标对象")
             return {'CANCELLED'}
 
         source_object = bpy.data.objects.get(source.name)
         destination_object = bpy.data.objects.get(destination.name)
 
         if not source_object or not destination_object:
-            self.report({'ERROR'}, "Please, Select Source and Target object")
+            self.report({'ERROR'}, "请选择源对象和目标对象")
             return {'CANCELLED'}
 
    
         match_vertex_groups(source_object, destination_object)
-        self.report({'INFO'}, "Vertex groups matched.")
+        self.report({'INFO'}, "顶点组已匹配")
         
 
         if destination_object and destination_object.type == 'MESH' and destination_object.vertex_groups:
             vertex_group_names = [vg.name for vg in destination_object.vertex_groups]
-            print("Remapped VG's:", ", ".join(vertex_group_names))
+            print("已重映射顶点组:", ", ".join(vertex_group_names))
         else:
-            print("No vertex groups found in the target object.")
+            print("目标对象中未找到顶点组")
 
         bpy.ops.object.mode_set(mode='OBJECT')
         bpy.context.view_layer.objects.active = destination_object
@@ -334,9 +334,9 @@ def match_vertex_groups(source_obj, target_obj):
     
     
 class OBJECT_OT_separate_by_material_and_rename(bpy.types.Operator):
-    """Separate by Material and Rename"""
+    """按材质分离并重命名物体"""
     bl_idname = "object.separate_by_material_and_rename"
-    bl_label = "Separate by Material and Rename"
+    bl_label = "按材质分离并重命名"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
@@ -361,7 +361,7 @@ class OBJECT_OT_separate_by_material_and_rename(bpy.types.Operator):
 
     def draw(self, context):
         layout = self.layout
-        layout.label(text="Want to proceed?")
+        layout.label(text="是否继续执行？")
 
 def menu_func(self, context):
     self.layout.operator(OBJECT_OT_separate_by_material_and_rename.bl_idname)

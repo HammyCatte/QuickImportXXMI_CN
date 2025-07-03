@@ -29,7 +29,7 @@ class QuickImportBase:
 
         new_meshes = [obj for obj in imported_objects if obj.type == 'MESH']
         
-        print(f"New meshes detected: {[obj.name for obj in new_meshes]}")
+        print(f"检测到新的网格对象: {[obj.name for obj in new_meshes]}")
 
         if xxmi.import_textures:
             self.assign_existing_materials(new_meshes)
@@ -49,7 +49,7 @@ class QuickImportBase:
         for obj in new_meshes:
             if not obj.material_slots:
                 combined_name, letter = self.extract_combined_name(obj.name)
-                print(f"Combined name extracted for {obj.name}: '{combined_name}', letter: '{letter}'")
+                print(f"从 {obj.name} 提取的组合名称: '{combined_name}'，字母后缀: '{letter}'")
 
                 if combined_name:
                     matching_material = self.find_matching_material(combined_name, letter)
@@ -60,16 +60,16 @@ class QuickImportBase:
                         for material in bpy.data.materials:
                             if material.name.startswith("mat_") and f"{prefix}Body".lower() in material.name.lower():
                                 matching_material = material
-                                print(f"Using generic Body material for Dress: {matching_material.name}")
+                                print(f"为Dress使用通用的Body材质: {matching_material.name}")
                                 break
                 
                     if matching_material:
                         obj.data.materials.append(matching_material)
-                        print(f"Assigned material {matching_material.name} to {obj.name}")
+                        print(f"将材质 {matching_material.name} 分配给 {obj.name}")
                     else:
-                        print(f"No matching material found for {obj.name} with combined name '{combined_name}'")
+                        print(f"未找到与 {obj.name} 的组合名称 '{combined_name}' 匹配的材质")
                 else:
-                    print(f"No valid combined name found in {obj.name} to match materials")
+                    print(f"{obj.name} 中未找到有效的组合名称以匹配材质")
 
     def extract_combined_name(self, name):
         keywords = ['Body', 'Head', 'Arm', 'Leg', 'Dress', 'Extra', 'Extras', 'Hair', 'Mask', 'Idle', 'Face']
@@ -82,13 +82,13 @@ class QuickImportBase:
                 prefix = parts[0]
                 letter = parts[1][0] if len(parts) > 1 and parts[1] else ''
                 combined_name = prefix + actual_keyword
-                print(f"Combined name '{combined_name}' created from '{prefix}' and '{actual_keyword}' for {name}, letter: '{letter}'")
+                print(f"从 '{prefix}' 和 '{keyword}' 生成的组合名称 '{combined_name}'，字母后缀: '{letter}'")
                 return combined_name, letter
-        print(f"No keywords matched in {name}")
+        print(f"{name} 中未匹配到关键字")
         return "", ""
 
     def find_matching_material(self, combined_name, letter):
-        # F4ck you Asta 
+        # 特殊规则：Asta 的材质映射
         if combined_name.lower() == "astabody":
             asta_material_mapping = {
                 'C': 'BodyB',
@@ -99,21 +99,21 @@ class QuickImportBase:
             if target_material_suffix:
                 for material in bpy.data.materials:
                     if material.name.startswith("mat_") and target_material_suffix.lower() in material.name.lower():
-                        print(f"Found material {material.name} for Asta rule with letter '{letter}'")
+                        print(f"根据字母后缀 '{letter}' 找到 Asta 规则材质 {material.name}")
                         return material
-                print(f"No Asta rule material found for letter '{letter}'")
+                print(f"未找到字母后缀 '{letter}' 对应的 Asta 规则材质")
             else:
-                print(f"Letter '{letter}' does not match Asta rule requirements")
+                print(f"字母后缀 '{letter}' 不符合 Asta 规则要求")
             return None
 
-        # Standard matching logic for other prefixes, SCYLL WHY THE ENTIRE ALPHABET
+        # 标准匹配逻辑：从字母后缀开始反向搜索
         letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         start_index = letters.index(letter) if letter in letters else -1
 
         for i in range(start_index, -1, -1):
             current_letter = letters[i] if i >= 0 else ''
             for material in bpy.data.materials:
-                print(f"Checking material {material.name} for match with combined name '{combined_name}{current_letter}'")
+                print(f"检查材质 {material.name} 是否匹配组合名称 '{combined_name}{current_letter}'")
                 if material.name.startswith("mat_") and f"{combined_name}{current_letter}".lower() in material.name.lower():
                     return material
 
@@ -129,7 +129,7 @@ class QuickImportBase:
                 for coll in obj.users_collection:
                     coll.objects.unlink(obj)
             new_collection.objects.link(obj)
-            print(f"Moved {obj.name} to collection {collection_name}")
+            print(f"已将 {obj.name} 移至集合 {collection_name}")
 
     def create_mesh_collection(self, context, folder):
         #Sins logic for collections with custom properties, 
@@ -144,7 +144,7 @@ class QuickImportBase:
         for obj in selected_objects:
             # Skip if object is an armature or in Face collection
             if obj.type == 'ARMATURE' or (obj.users_collection and 'Face' in [c.name for c in obj.users_collection]):
-                print(f"Skipping {obj.name} as it is an armature or face mesh")
+                print(f"跳过 {obj.name}，因为它是骨架或面部网格")
                 continue
 
             if obj.name.startswith(collection_name):
@@ -172,9 +172,9 @@ class QuickImportBase:
                         bm.to_mesh(obj.data)
                         obj.data.update()
                         bm.free()
-                        print(f"Moved {obj.name} to collection {name} as {ob.name}.")
+                        print(f"已将 {obj.name} 作为 {ob.name} 移至集合 {name}")
                         obj.name = obj.name.rsplit("-", 1)[0] + "-KeepEmpty"
-                        print(f"{obj.name} maintains custom properties, don't delete.")
+                        print(f"{obj.name} 保留自定义属性，请勿删除。")
 
                         # Move any existing armature modifiers from the empty to the new mesh
                         for mod in obj.modifiers:
@@ -183,12 +183,12 @@ class QuickImportBase:
                                 new_mod.object = mod.object
                                 obj.modifiers.remove(mod)
                     else:
-                        print(f"Skipping vertex removal for non-mesh object {obj.name}")
+                        print(f"跳过非网格对象 {obj.name} 的顶点移除")
 
                 except IndexError:
-                    print(f"Failed on {obj.name} as it does not contain collection name")
+                    print(f"{obj.name} 失败，因为它不包含集合名称")
             else:
-                print(f"Ignored {obj.name} as it does not match the collection name")
+                print(f"忽略 {obj.name}，因为它与集合名称不匹配")
 
     def reset_rotation(self, context):
         for obj in context.selected_objects:
@@ -234,7 +234,7 @@ class QuickImportBase:
             ]
 
             if not body_objects:
-                raise Exception("No valid body objects selected for armature import")
+                raise Exception("未选择用于骨架导入的有效主体对象")
 
             # Step 3: Select the first body object as reference for armature import
             obj = body_objects[0]
@@ -250,7 +250,7 @@ class QuickImportBase:
             # Step 5: Identify all imported armatures
             imported_armatures = [obj for obj in newly_imported if obj.type == 'ARMATURE']
             if not imported_armatures:
-                raise Exception("No armatures found in imported objects")
+                raise Exception("在导入的物体中未发现骨架")
 
             # Step 6: Match each mesh to the most appropriate armature
             for obj in body_objects:
@@ -290,7 +290,7 @@ class QuickImportBase:
                     obj.select_set(True)
 
         except Exception as e:
-            self.report({'ERROR'}, f"Armature import failed: {str(e)}")
+            self.report({'ERROR'}, f"骨架导入失败: {str(e)}")
             for obj in previously_selected:
                 obj.select_set(True)
 
@@ -309,7 +309,7 @@ class QuickImportBase:
             newly_imported = set(bpy.context.selected_objects) - previously_selected
             
             if not newly_imported:
-                raise Exception("No face mesh was found to import")
+                raise Exception("未找到要导入的面部网格")
                 
             face_collection = bpy.data.collections.new("Face")
             bpy.context.scene.collection.children.link(face_collection)
@@ -327,7 +327,7 @@ class QuickImportBase:
                 obj.select_set(True)
                 
         except Exception as e:
-            self.report({'ERROR'}, f"Face import failed: {str(e)}")
+            self.report({'ERROR'}, f"面部导入失败: {str(e)}")
             for obj in previously_selected:
                 obj.select_set(True)
 
@@ -378,14 +378,14 @@ COMMON_PARTS = ['PonyTail', 'Body', 'Head', 'Arm', 'Leg', 'Dress', 'Extra', 'Ext
 
 class QuickImportArmature(bpy.types.Operator):
     bl_idname = "import_scene.armature_file"
-    bl_label = "Import Armature" 
-    bl_description = "Import matching armature file"
+    bl_label = "导入骨架" 
+    bl_description = "导入匹配的骨架文件"
     
     def execute(self, context):
         try:
             self.post_import_processing(context)
         except FileNotFoundError as e:
-            self.report({'ERROR'}, f"File not found: {str(e)}")
+            self.report({'ERROR'}, f"文件未找到: {str(e)}")
             return {'CANCELLED'}
         except Exception as e:
             self.report({'ERROR'}, str(e))
@@ -394,12 +394,12 @@ class QuickImportArmature(bpy.types.Operator):
     
     def post_import_processing(self, context):
         script_dir = os.path.dirname(os.path.realpath(__file__))
-        print(f"Script directory: {script_dir}")
+        print(f"脚本目录: {script_dir}")
         base_armatures_dir = os.path.join(script_dir, "resources", "armatures")
-        print(f"Base armatures directory: {base_armatures_dir}")
+        print(f"基础骨架目录: {base_armatures_dir}")
         
         if not os.path.exists(base_armatures_dir):
-            raise FileNotFoundError(f"Armatures directory not found at: {base_armatures_dir}")
+            raise FileNotFoundError(f"骨架目录不存在: {base_armatures_dir}")
         
         # Define game-specific armature directories
         gi_armatures_dir = os.path.join(base_armatures_dir, "GI")
@@ -407,7 +407,7 @@ class QuickImportArmature(bpy.types.Operator):
         
         selected_objects = context.selected_objects
         if not selected_objects:
-            raise Exception("No object selected")
+            raise Exception("未选择任何对象")
 
         # Group objects by their base name before any common parts
         object_groups = {}
@@ -436,7 +436,7 @@ class QuickImportArmature(bpy.types.Operator):
                     object_groups[base_name] = []
                 object_groups[base_name].append(obj)
             else:
-                print(f"Skipping object with unrecognized parts: {obj.name}")
+                print(f"跳过具有无法识别部分的对象: {obj.name}")
 
         # Don't try to import armature for Face collection
         if "Face" in object_groups:
@@ -467,7 +467,7 @@ class QuickImportArmature(bpy.types.Operator):
                     with bpy.data.libraries.load(armature_path) as (data_from, data_to):
                         armature_objects = [name for name in data_from.objects if 'Armature' in name]
                         if not armature_objects:
-                            print(f"Warning: No armature found in file: {armature_path}")
+                            print(f"警告：文件中未找到骨架: {armature_path}")
                             continue
                         data_to.objects = armature_objects
               
@@ -479,13 +479,13 @@ class QuickImportArmature(bpy.types.Operator):
                     break  # Stop searching if armature was found
                     
             if not armature_found:
-                print(f"Warning: No matching armature file found for {base_name} in either GI or HSR directories")
+                print(f"警告：在 GI 或 HSR 目录中未找到与 {base_name} 匹配的骨架文件")
 
 
 class QuickImportRaw(QuickImport3DMigotoRaw, QuickImportBase):
-    """Setup Character file with raw data .IB + .VB"""
+    """导入角色的原始数据(.IB + .VB)文件"""
     bl_idname = "import_scene.3dmigoto_raw"
-    bl_label = "Quick Import Raw for XXMI"
+    bl_label = "XXMI原始数据导入"
     bl_options = {"UNDO"}
 
     def execute(self, context):
@@ -496,17 +496,17 @@ class QuickImportRaw(QuickImport3DMigotoRaw, QuickImportBase):
         folder = os.path.dirname(self.properties.filepath)
         print("------------------------")
 
-        print(f"Found Folder: {folder}")
+        print(f"找到目录: {folder}")
         files = os.listdir(folder)
         files = [f for f in files if f.endswith("Diffuse.dds")]
-        print(f"List of files: {files}")
+        print(f"文件列表: {files}")
 
         if bpy.app.version < (4, 2, 0):
             importedmeshes = TextureHandler.create_material(context, files, folder)
         else:
             importedmeshes = TextureHandler42.create_material(context, files, folder)
 
-        print(f"Imported meshes: {[obj.name for obj in importedmeshes]}")
+        print(f"已导入网格对象: {[obj.name for obj in importedmeshes]}")
 
         self.post_import_processing(context, folder)
 
@@ -514,10 +514,10 @@ class QuickImportRaw(QuickImport3DMigotoRaw, QuickImportBase):
                    
 class QuickImportFace(bpy.types.Operator):
     bl_idname = "import_scene.face_file"
-    bl_label = "Import Face"
-    bl_description = "Import matching face file"
+    bl_label = "导入面部"
+    bl_description = "导入匹配的面部文件"
     
-    # Special face-specific name mappings
+    # 面部特殊名称映射
     FACE_NAME_MAPPING = {
         "JeanCN": "Jean",
         "JeanSea": "Jean", 
@@ -534,7 +534,7 @@ class QuickImportFace(bpy.types.Operator):
         try:
             self.post_import_processing(context)
         except FileNotFoundError as e:
-            self.report({'ERROR'}, f"File not found: {str(e)}")
+            self.report({'ERROR'}, f"文件未找到: {str(e)}")
             return {'CANCELLED'}
         except Exception as e:
             self.report({'ERROR'}, str(e))
@@ -546,15 +546,15 @@ class QuickImportFace(bpy.types.Operator):
         faces_dir = os.path.join(script_dir, "resources", "faces")
         
         if not os.path.exists(faces_dir):
-            raise FileNotFoundError(f"Faces directory not found at: {faces_dir}")
+            raise FileNotFoundError(f"面部目录不存在: {faces_dir}")
         
         selected_objects = context.selected_objects
         if not selected_objects:
-            raise Exception("No object selected")
+            raise Exception("未选择任何对象")
         
         obj_name = selected_objects[0].name.split('-')[0].split('=')[0]
         if not obj_name:
-            raise Exception("Invalid object name")
+            raise Exception("无效的对象名称")
         
         # Sort COMMON_PARTS by length in descending order to match longest parts first
         sorted_parts = sorted(COMMON_PARTS, key=len, reverse=True)
@@ -571,17 +571,17 @@ class QuickImportFace(bpy.types.Operator):
         base_name = self.FACE_NAME_MAPPING.get(base_name, CHARACTER_NAME_MAPPING.get(base_name, base_name))
         
         if not base_name:
-            raise Exception("Could not determine base name")
+            raise Exception("无法确定基本名称")
         
         matching_files = [f for f in os.listdir(faces_dir) 
                           if base_name.lower() in f.lower() and f.endswith('.blend')]
         
         if not matching_files:
-            raise FileNotFoundError(f"No matching face file found for {base_name} in {faces_dir}")
+            raise FileNotFoundError(f"在 {faces_dir} 中未找到与 {base_name} 匹配的面部文件")
         
         face_path = os.path.join(faces_dir, matching_files[0])
         if not os.path.isfile(face_path):
-            raise FileNotFoundError(f"Face file not found at: {face_path}")
+            raise FileNotFoundError(f"未找到面部文件: {face_path}")
             
         with bpy.data.libraries.load(face_path) as (data_from, data_to):
             data_to.objects = [name for name in data_from.objects]
@@ -592,9 +592,9 @@ class QuickImportFace(bpy.types.Operator):
                 obj.select_set(True)
 
 class QuickImport(QuickImportXXMIFrameAnalysis, QuickImportBase):
-    """Setup Character .txt file"""
+    """导入角色的帧分析数据(.txt)文件"""
     bl_idname = "import_scene.3dmigoto_frame_analysis"
-    bl_label = "Quick Import for XXMI"
+    bl_label = "XXMI快速导入"
     bl_options = {"UNDO"}
 
     def execute(self, context):
@@ -603,10 +603,10 @@ class QuickImport(QuickImportXXMIFrameAnalysis, QuickImportBase):
         super().execute(context)
 
         folder = os.path.dirname(self.properties.filepath)
-        print(f"Found Folder: {folder}")
+        print(f"找到目录: {folder}")
 
         files = os.listdir(folder)
-        print (f"Files: {files}")
+        print (f"文件列表: {files}")
 
         texture_files = []
         if cfg.import_textures:
@@ -623,13 +623,13 @@ class QuickImport(QuickImportXXMIFrameAnalysis, QuickImportBase):
             for texture_type, should_import in texture_map.items():
                 if should_import:
                     texture_files.extend([f for f in files if f.lower().endswith(f"{texture_type.lower()}.dds")])
-            print(f"Texture files: {texture_files}")
+            print(f"待导入贴图文件: {texture_files}")
         if bpy.app.version < (4, 2, 0):
             importedmeshes = TextureHandler.create_material(context, texture_files, folder)
         else:
             importedmeshes = TextureHandler42.create_material(context, texture_files, folder)
 
-        print(f"Imported meshes: {[obj.name for obj in importedmeshes]}")
+        print(f"已导入网格对象: {[obj.name for obj in importedmeshes]}")
 
         self.post_import_processing(context, folder)
 
@@ -637,16 +637,16 @@ class QuickImport(QuickImportXXMIFrameAnalysis, QuickImportBase):
     
 class SavePreferencesOperator(bpy.types.Operator):
     bl_idname = "quickimport.save_preferences"
-    bl_label = "Save Import Settings"
-    bl_description = "Save current QuickImport settings as default preferences"
+    bl_label = "保存导入设置"
+    bl_description = "将当前快速导入设置保存为默认偏好设置"
     
     def execute(self, context):
         save_preferences(context)
-        self.report({'INFO'}, "Preferences saved successfully!")
+        self.report({'INFO'}, "偏好设置保存成功！")
         return {'FINISHED'}
        
 def menu_func_import(self, context):
-    self.layout.operator(QuickImport.bl_idname, text="Quick Import for XXMI")   
-    self.layout.operator(QuickImportRaw.bl_idname, text="Quick Import Raw for XXMI")
+    self.layout.operator(QuickImport.bl_idname, text="XXMI快速导入")   
+    self.layout.operator(QuickImportRaw.bl_idname, text="XXMI原始数据导入")
 
 

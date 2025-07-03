@@ -27,7 +27,7 @@ from bpy.app.handlers import persistent #type: ignore
 try:
     from .addon_updater import Updater
 except Exception as e:
-    print("ERROR INITIALIZING UPDATER")
+    print("初始化更新程序时出错")
     print(str(e))
 
 
@@ -105,25 +105,24 @@ def get_update_post():
 
 
 class AddonUpdaterInstallPopup(bpy.types.Operator):
-    bl_label = "Update QuickImport"
+    bl_label = "更新快速导入"
     bl_idname = Updater.addon + ".updater_install_popup"
-    bl_description = "Popup menu to check and display current updates available"
+    bl_description = "显示当前可用更新的弹窗菜单"
     bl_options = {'REGISTER', 'INTERNAL'}
 
     clean_install = bpy.props.BoolProperty(
-        name="Clean install",
-        description="If enabled, completely clear the addon's folder before"
-                    "installing new update, creating a fresh install",
+        name="纯净安装",
+        description="若启用，将在安装新版本前完全清除插件目录，执行全新安装",
         default=False,
         options={'HIDDEN'}
     )
     ignore_enum = bpy.props.EnumProperty(
-        name="Process update",
-        description="Decide to install, ignore, or defer new addon update",
+        name="更新处理",
+        description="选择如何处理当前更新",
         items=[
-            ("install", "Update Now", "Install update now"),
-            ("ignore", "Ignore", "Ignore this update to prevent future popups"),
-            ("defer", "Defer", "Defer choice till next blender session")
+            ("install", "立即更新", "立即安装新版本"),
+            ("ignore", "忽略", "忽略此版本更新并不再提醒"),
+            ("defer", "稍后", "下次启动时再决定")
         ],
         options={'HIDDEN'}
     )
@@ -137,25 +136,25 @@ class AddonUpdaterInstallPopup(bpy.types.Operator):
     def draw(self, context):
         layout = self.layout
         if Updater.invalid_updater is True:
-            layout.label(text="Updater module error")
+            layout.label(text="更新器模块错误")
             return
         elif Updater.update_ready is True:
             col = layout.column()
             col.scale_y = 0.7
-            col.label(text="Update {} ready!".format(str(Updater.update_version)),
-                      icon="LOOP_FORWARDS")
-            col.label(text="Choose 'Update Now' & press OK to install, ", icon="BLANK1")
-            col.label(text="or click outside window to defer", icon="BLANK1")
+            col.label(text="{} 更新可用！".format(str(Updater.update_version)),
+                     icon="LOOP_FORWARDS")
+            col.label(text="选择'立即更新'并按确定进行安装", icon="BLANK1")
+            col.label(text="或点击窗口外区域延迟更新", icon="BLANK1")
             row = col.row()
             row.prop(self, "ignore_enum", expand=True)
             col.split()
         elif Updater.update_ready is False:
             col = layout.column()
             col.scale_y = 0.7
-            col.label(text="No updates available")
-            col.label(text="Press okay to dismiss dialog")
+            col.label(text="暂无可用更新")
+            col.label(text="按确定关闭对话框")
         else:
-            layout.label(text="Check for update now?")
+            layout.label(text="立即检查更新？")
 
     def execute(self, context):
 
@@ -173,13 +172,13 @@ class AddonUpdaterInstallPopup(bpy.types.Operator):
                 return {'FINISHED'}
 
             res = Updater.run_update(force=False,
-                                     callback=post_update_callback,
-                                     clean=self.clean_install)
+                                   callback=post_update_callback,
+                                   clean=self.clean_install)
             if Updater.verbose:
                 if res == 0:
-                    print("Updater returned successful")
+                    print("更新器返回成功")
                 else:
-                    print("Updater returned {}, error occurred".format(res))
+                    print("更新器返回错误代码: {}".format(res))
         elif Updater.update_ready is None:
             _ = Updater.check_for_update(now=True)
 
@@ -187,14 +186,14 @@ class AddonUpdaterInstallPopup(bpy.types.Operator):
             getattr(getattr(bpy.ops, atr[0]), atr[1])('INVOKE_DEFAULT')
         else:
             if Updater.verbose:
-                print("Doing nothing, not ready for update")
+                print("无需操作，更新未就绪")
         return {'FINISHED'}
 
 
 class AddonUpdaterCheckNow(bpy.types.Operator):
-    bl_label = "Check now for update"
+    bl_label = "立即检查更新"
     bl_idname = Updater.addon + ".updater_check_now"
-    bl_description = "Check now for an update to the QuickImport"
+    bl_description = "立即检查快速导入的更新" 
     bl_options = {'REGISTER', 'INTERNAL'}
 
     def execute(self, context):
@@ -207,10 +206,10 @@ class AddonUpdaterCheckNow(bpy.types.Operator):
         settings = get_user_preferences(context)
         if not settings:
             if Updater.verbose:
-                print("Could not get {} preferences, update check skipped".format(__package__))
+                print("无法获取{}首选项，跳过更新检查".format(__package__))
             return {'CANCELLED'}
         
-        # Remove enable keyword argument since it's not expected
+        # 删除启用关键字参数，因为它不是预期的
         Updater.set_check_interval(months=settings.updater_interval_months,
                                    days=settings.updater_interval_days,
                                    hours=settings.updater_interval_hours,
@@ -220,15 +219,14 @@ class AddonUpdaterCheckNow(bpy.types.Operator):
 
 
 class AddonUpdaterUpdateNow(bpy.types.Operator):
-    bl_label = "Update " + Updater.addon + " addon now"
+    bl_label = "立即更新插件"
     bl_idname = Updater.addon + ".updater_update_now"
-    bl_description = "Update to the latest version of the QuickImport"
+    bl_description = "更新至快速导入的最新版本"
     bl_options = {'REGISTER', 'INTERNAL'}
 
     clean_install = bpy.props.BoolProperty(
-        name="Clean install",
-        description="If enabled, completely clear the addon's folder before"
-                    "installing new update, creating a fresh install",
+        name="纯净安装",
+        description="若启用，将在安装新版本前完全清除插件目录，执行全新安装",
         default=False,
         options={'HIDDEN'}
     )
@@ -241,7 +239,7 @@ class AddonUpdaterUpdateNow(bpy.types.Operator):
         if Updater.manual_only is True:
             bpy.ops.wm.url_open(url=Updater.website)
         if Updater.update_ready is True:
-            # if it fails, offer to open the website instead
+            # 如果失败，则建议打开网站
             try:
                 res = Updater.run_update(force=False,
                                          callback=post_update_callback,
@@ -249,11 +247,11 @@ class AddonUpdaterUpdateNow(bpy.types.Operator):
 
                 if Updater.verbose:
                     if res == 0:
-                        print("Updater returned successful")
+                        print("更新器返回成功")
                     else:
-                        print("Updater returned " + str(res) + ", error occurred")
+                        print("更新器返回代码：" + str(res))
             except Exception as ex:
-                Updater._error = "Error trying to run update"
+                Updater._error = "尝试更新时发生错误"
                 Updater._error_msg = str(ex)
                 atr = AddonUpdaterInstallManually.bl_idname.split(".")
                 getattr(getattr(bpy.ops, atr[0]), atr[1])('INVOKE_DEFAULT')
@@ -263,37 +261,36 @@ class AddonUpdaterUpdateNow(bpy.types.Operator):
             getattr(getattr(bpy.ops, atr[0]), atr[1])('INVOKE_DEFAULT')
 
         elif Updater.update_ready is False:
-            self.report({'INFO'}, "Nothing to update")
+            self.report({'INFO'}, "无需更新")
         else:
-            self.report({'ERROR'}, "Encountered problem while trying to update")
+            self.report({'ERROR'}, "更新过程中发生错误")
 
         return {'FINISHED'}
 
 
 class AddonUpdaterUpdateTarget(bpy.types.Operator):
-    bl_label = Updater.addon + " version target"
+    bl_label = "插件版本目标"
     bl_idname = Updater.addon + ".updater_update_target"
-    bl_description = "Install a targeted version of the QuickImport"
+    bl_description = "安装指定版本的快速导入"
     bl_options = {'REGISTER', 'INTERNAL'}
 
     def target_version(self, _):
         ret = []
         i = 0
         for tag in Updater.tags:
-            ret.append((tag, tag, "Select to install " + tag))
+            ret.append((tag, tag, "安装此版本：" + tag))
             i += 1
         return ret
 
     target = bpy.props.EnumProperty(
-        name="Target version to install",
-        description="Select the version to install",
+        name="目标安装版本",
+        description="选择要安装的版本",
         items=target_version
     )
 
     clean_install = bpy.props.BoolProperty(
-        name="Clean install",
-        description="If enabled, completely clear the addon's folder before"
-                    "installing new update, creating a fresh install",
+        name="纯净安装",
+        description="若启用，将在安装新版本前完全清除插件目录，执行全新安装",
         default=False,
         options={'HIDDEN'}
     )
@@ -310,11 +307,11 @@ class AddonUpdaterUpdateTarget(bpy.types.Operator):
     def draw(self, context):
         layout = self.layout
         if Updater.invalid_updater is True:
-            layout.label(text="Updater error")
+            layout.label(text="更新模块初始化失败")
             return
         split = layout_split(layout, factor=0.66)
         subcol = split.column()
-        subcol.label(text="Select install version")
+        subcol.label(text="选择回滚版本")
         subcol = split.column()
         subcol.prop(self, "target", text="")
 
@@ -324,29 +321,29 @@ class AddonUpdaterUpdateTarget(bpy.types.Operator):
             return {'CANCELLED'}
 
         res = Updater.run_update(force=False,
-                                 revert_tag=self.target,
-                                 callback=post_update_callback,
-                                 clean=self.clean_install)
+                               revert_tag=self.target,
+                               callback=post_update_callback,
+                               clean=self.clean_install)
 
         if res == 0:
             if Updater.verbose:
-                print("Updater returned successful")
+                print("更新成功完成")
         else:
             if Updater.verbose:
-                print("Updater returned " + str(res) + ", error occurred")
+                print(f"更新失败，错误代码: {res}")
             return {'CANCELLED'}
 
         return {'FINISHED'}
 
 
 class AddonUpdaterInstallManually(bpy.types.Operator):
-    bl_label = "Install update manually"
+    bl_label = "手动安装更新"
     bl_idname = Updater.addon + ".updater_install_manually"
-    bl_description = "Proceed to manually install update"
+    bl_description = "手动安装插件更新版本"
     bl_options = {'REGISTER', 'INTERNAL'}
 
     error = bpy.props.StringProperty(
-        name="Error Occurred",
+        name="错误信息",
         default="",
         options={'HIDDEN'}
     )
@@ -358,51 +355,51 @@ class AddonUpdaterInstallManually(bpy.types.Operator):
         layout = self.layout
 
         if Updater.invalid_updater is True:
-            layout.label(text="Updater error")
+            layout.label(text="更新器错误")
             return
 
         if self.error != "":
             col = layout.column()
             col.scale_y = 0.7
-            col.label(text="There was an issue trying to auto-install", icon="ERROR")
-            col.label(text="Press the download button below and install", icon="BLANK1")
-            col.label(text="the zip file like a normal addon.", icon="BLANK1")
+            col.label(text="自动安装时发生问题", icon="ERROR")
+            col.label(text="点击下方下载按钮并安装", icon="BLANK1")
+            col.label(text="像普通插件一样安装zip文件", icon="BLANK1")
         else:
             col = layout.column()
             col.scale_y = 0.7
-            col.label(text="Install the addon manually")
-            col.label(text="Press the download button below and install")
-            col.label(text="the zip file like a normal addon.")
+            col.label(text="请手动安装插件")
+            col.label(text="点击下方下载按钮并安装")
+            col.label(text="像普通插件一样安装zip文件")
 
         row = layout.row()
 
         if Updater.update_link is not None:
             row.operator("wm.url_open",
-                         text="Direct download").url = Updater.update_link
+                         text="直接下载").url = Updater.update_link
         else:
             row.operator("wm.url_open",
-                         text="(failed to retrieve direct download)")
+                         text="(无法获取直接下载链接)")
             row.enabled = False
 
             if Updater.website is not None:
                 row = layout.row()
-                row.operator("wm.url_open", text="Open website").url = Updater.website
+                row.operator("wm.url_open", text="打开官网").url = Updater.website
             else:
                 row = layout.row()
-                row.label(text="See source website to download the update")
+                row.label(text="请访问来源网站下载更新")
 
     def execute(self, context):
         return {'FINISHED'}
 
 
 class AddonUpdaterUpdatedSuccessful(bpy.types.Operator):
-    bl_label = "Installation Report"
+    bl_label = "安装报告"
     bl_idname = Updater.addon + ".updater_update_successful"
-    bl_description = "Update installation response"
+    bl_description = "更新安装结果反馈"
     bl_options = {'REGISTER', 'INTERNAL', 'UNDO'}
 
     error = bpy.props.StringProperty(
-        name="Error Occurred",
+        name="错误信息",
         default="",
         options={'HIDDEN'}
     )
@@ -414,14 +411,14 @@ class AddonUpdaterUpdatedSuccessful(bpy.types.Operator):
         layout = self.layout
 
         if Updater.invalid_updater is True:
-            layout.label(text="Updater error")
+            layout.label(text="更新器错误")
             return
 
         saved = Updater.json
         if self.error != "":
             col = layout.column()
             col.scale_y = 0.7
-            col.label(text="Error occurred, did not install", icon="ERROR")
+            col.label(text="发生错误，未能安装", icon="ERROR")
             if Updater.error_msg:
                 msg = Updater.error_msg
             else:
@@ -430,43 +427,43 @@ class AddonUpdaterUpdatedSuccessful(bpy.types.Operator):
             rw = col.row()
             rw.scale_y = 2
             rw.operator("wm.url_open",
-                        text="Click for manual download.",
+                        text="点击手动下载",
                         icon="BLANK1").url = Updater.website
 
         elif Updater.auto_reload_post_update is False:
             if "just_restored" in saved and saved["just_restored"] is True:
                 col = layout.column()
                 col.scale_y = 0.7
-                col.label(text="Addon restored", icon="RECOVER_LAST")
-                col.label(text="Restart blender to reload.", icon="BLANK1")
+                col.label(text="插件已恢复", icon="RECOVER_LAST")
+                col.label(text="请重启Blender以重新加载", icon="BLANK1")
                 Updater.json_reset_restore()
             else:
                 col = layout.column()
                 col.scale_y = 0.7
-                col.label(text="Addon successfully installed", icon="FILE_TICK")
-                col.label(text="Restart blender to reload.", icon="BLANK1")
+                col.label(text="插件安装成功", icon="FILE_TICK")
+                col.label(text="请重启Blender以重新加载", icon="BLANK1")
 
         else:
             if "just_restored" in saved and saved["just_restored"] is True:
                 col = layout.column()
                 col.scale_y = 0.7
-                col.label(text="Addon restored", icon="RECOVER_LAST")
-                col.label(text="Consider restarting blender to fully reload.", icon="BLANK1")
+                col.label(text="插件已恢复", icon="RECOVER_LAST")
+                col.label(text="建议重启Blender以完全重新加载", icon="BLANK1")
                 Updater.json_reset_restore()
             else:
                 col = layout.column()
                 col.scale_y = 0.7
-                col.label(text="Addon successfully installed", icon="FILE_TICK")
-                col.label(text="Consider restarting blender to fully reload.", icon="BLANK1")
+                col.label(text="插件安装成功", icon="FILE_TICK")
+                col.label(text="建议重启Blender以完全重新加载", icon="BLANK1")
 
     def execute(self, context):
         return {'FINISHED'}
 
 
 class AddonUpdaterRestoreBackup(bpy.types.Operator):
-    bl_label = "Restore backup"
+    bl_label = "恢复备份"
     bl_idname = Updater.addon + ".updater_restore_backup"
-    bl_description = "Restore addon from backup"
+    bl_description = "从备份恢复插件"
     bl_options = {'REGISTER', 'INTERNAL'}
 
     @classmethod
@@ -484,9 +481,9 @@ class AddonUpdaterRestoreBackup(bpy.types.Operator):
 
 
 class AddonUpdaterIgnore(bpy.types.Operator):
-    bl_label = "Ignore update"
+    bl_label = "忽略更新"
     bl_idname = Updater.addon + ".updater_ignore"
-    bl_description = "Ignore update to prevent future popups"
+    bl_description = "忽略此版本更新并不再提醒"
     bl_options = {'REGISTER', 'INTERNAL'}
 
     @classmethod
@@ -507,13 +504,13 @@ class AddonUpdaterIgnore(bpy.types.Operator):
 
 
 class AddonUpdaterEndBackground(bpy.types.Operator):
-    bl_label = "End background check"
+    bl_label = "停止后台检查"
     bl_idname = Updater.addon + ".end_background_check"
-    bl_description = "Stop checking for update in the background"
+    bl_description = "停止后台更新检查流程"
     bl_options = {'REGISTER', 'INTERNAL'}
 
     def execute(self, context):
-        # in case of error importing updater
+        # 当更新模块导入出错时
         if Updater.invalid_updater is True:
             return {'CANCELLED'}
         Updater.stop_async_check_update()
@@ -564,7 +561,7 @@ def updater_run_install_popup_handler(_):
 
         if ver_tuple < Updater.current_version:
             if Updater.verbose:
-                print("{} updater: appears user updated, clearing flag".format(Updater.addon))
+                print("{} 更新器：检测到用户已完成更新，正在清除标志".format(Updater.addon))
             Updater.json_reset_restore()
             return
     atr = AddonUpdaterInstallPopup.bl_idname.split(".")
@@ -591,7 +588,7 @@ def post_update_callback(_, res=None):
 
     if res is None:
         if Updater.verbose:
-            print("{} updater: Running post update callback".format(Updater.addon))
+            print("{} 更新器：正在执行更新后回调".format(Updater.addon))
 
         atr = AddonUpdaterUpdatedSuccessful.bl_idname.split(".")
         getattr(getattr(bpy.ops, atr[0]), atr[1])('INVOKE_DEFAULT')
@@ -629,7 +626,7 @@ def check_for_update_background():
                                minutes=settings.updater_intrval_minutes)
 
     if Updater.verbose:
-        print("{} updater: Running background check for update".format(Updater.addon))
+        print("{} 更新器：正在后台检查更新".format(Updater.addon))
     Updater.check_for_update_async(background_update_callback)
     ran_background_check = True
 
@@ -641,7 +638,7 @@ def check_for_update_nonthreaded(self, _):
     settings = get_user_preferences(bpy.context)
     if not settings:
         if Updater.verbose:
-            print("Could not get {} preferences, update check skipped".format(
+            print("无法获取 {} 首选项，已跳过更新检查".format(
                 __package__))
         return
     Updater.set_check_interval(enable=settings.auto_check_update,
@@ -656,7 +653,7 @@ def check_for_update_nonthreaded(self, _):
         getattr(getattr(bpy.ops, atr[0]), atr[1])('INVOKE_DEFAULT')
     else:
         if Updater.verbose:
-            print("No update ready")
+            print("暂无可用更新")
         self.report({'INFO'}, "No update ready")
 
 
@@ -692,8 +689,8 @@ def update_notice_box_ui(self, _):
             box = layout.box()
             col = box.column()
             col.scale_y = 0.7
-            col.label(text="Restart blender", icon="ERROR")
-            col.label(text="to complete update")
+            col.label(text="重启Blender", icon="ERROR")
+            col.label(text="以完成更新")
             return
 
     if "ignore" in Updater.json and Updater.json["ignore"] is True:
@@ -704,59 +701,59 @@ def update_notice_box_ui(self, _):
     layout = self.layout
     box = layout.box()
     col = box.column(align=True)
-    col.label(text="Update ready!", icon="ERROR")
+    col.label(text="更新已就绪！", icon="ERROR")
     col.separator()
     row = col.row(align=True)
     split = row.split(align=True)
     col_l = split.column(align=True)
     col_l.scale_y = 1.5
-    col_l.operator(AddonUpdaterIgnore.bl_idname, icon="X", text="Ignore")
+    col_l.operator(AddonUpdaterIgnore.bl_idname, icon="X", text="忽略")
     col_r = split.column(align=True)
     col_r.scale_y = 1.5
     if Updater.manual_only is False:
-        col_r.operator(AddonUpdaterUpdateNow.bl_idname, text="Update", icon="LOOP_FORWARDS")
-        col.operator("wm.url_open", text="Open website").url = Updater.website
-        col.operator(AddonUpdaterInstallManually.bl_idname, text="Install manually")
+        col_r.operator(AddonUpdaterUpdateNow.bl_idname, text="更新", icon="LOOP_FORWARDS")
+        col.operator("wm.url_open", text="打开官网").url = Updater.website
+        col.operator(AddonUpdaterInstallManually.bl_idname, text="手动安装")
     else:
-        col.operator("wm.url_open", text="Get it now").url = Updater.website
+        col.operator("wm.url_open", text="立即获取").url = Updater.website
 
 
 def update_settings_ui(self, context, element=None):
-    """Preferences - for drawing with full width inside user preferences
+    """首选项 - 用于在用户首选项面板内以全宽绘制
 
-    A function that can be run inside user preferences panel for prefs UI.
-    Place inside UI draw using:
-        addon_Updater_ops.update_settings_ui(self, context)
-    or by:
-        addon_Updater_ops.update_settings_ui(context)
+    该函数可在用户首选项面板内运行，用于首选项 UI。
+    放置在 UI 绘制中，使用：
+    addon_Updater_ops.update_settings_ui(self, context)
+    或：
+    addon_Updater_ops.update_settings_ui(context)
     """
 
-    # Element is a UI element, such as layout, a row, column, or box.
+    # Element 是一个 UI 元素，例如布局、行、列或框。
     if element is None:
         element = self.layout
     box = element.box()
 
-    # In case of error importing Updater.
+    # 以防导入更新程序时出现错误。
     if Updater.invalid_updater:
-        box.label(text="Error initializing Updater code:")
+        box.label(text="初始化更新器错误：")
         box.label(text=Updater.error_msg)
         return
     settings = get_user_preferences(context)
     if not settings:
-        box.label(text="Error getting Updater preferences", icon='ERROR')
+        box.label(text="获取更新器首选项错误", icon='ERROR')
         return
 
-    # auto-update settings
-    box.label(text="Updater Settings")
+    # 自动更新设置
+    box.label(text="更新器设置")
     row = box.row()
 
-    # special case to tell user to restart blender, if set that way
+    # 特殊情况，告诉用户重新启动Blender，如果这样设置
     if not Updater.auto_reload_post_update:
         saved_state = Updater.json
         if "just_updated" in saved_state and saved_state["just_updated"]:
             row.alert = True
             row.operator("wm.quit_blender",
-                         text="Restart blender to complete update",
+                         text="重启Blender以完成更新",
                          icon="ERROR")
             return
 
@@ -768,7 +765,7 @@ def update_settings_ui(self, context, element=None):
     if not settings.auto_check_update:
         sub_col.enabled = False
     sub_row = sub_col.row()
-    sub_row.label(text="Interval between checks")
+    sub_row.label(text="检查间隔时间")
     sub_row = sub_col.row(align=True)
     check_col = sub_row.column(align=True)
     check_col.prop(settings, "updater_interval_months")
@@ -776,12 +773,12 @@ def update_settings_ui(self, context, element=None):
     check_col.prop(settings, "updater_interval_days")
     check_col = sub_row.column(align=True)
 
-    # Consider un-commenting for local dev (e.g. to set shorter intervals)
+    # 考虑取消注释以用于本地开发（例如，设置更短的间隔）
     # check_col.prop(settings,"Updater_interval_hours")
     # check_col = sub_row.column(align=True)
     # check_col.prop(settings,"Updater_interval_minutes")
 
-    # Checking / managing updates.
+    # 检查/管理更新。
     row = box.row()
     col = row.column()
     if Updater.error is not None:
@@ -805,13 +802,13 @@ def update_settings_ui(self, context, element=None):
     elif Updater.update_ready is None and not Updater.async_checking:
         col.scale_y = 2
         col.operator(AddonUpdaterCheckNow.bl_idname)
-    elif Updater.update_ready is None:  # async is running
+    elif Updater.update_ready is None: # 异步正在运行
         sub_col = col.row(align=True)
         sub_col.scale_y = 1
         split = sub_col.split(align=True)
         split.enabled = False
         split.scale_y = 2
-        split.operator(AddonUpdaterCheckNow.bl_idname, text="Checking...")
+        split.operator(AddonUpdaterCheckNow.bl_idname, text="检查中...")
         split = sub_col.split(align=True)
         split.scale_y = 2
         split.operator(AddonUpdaterEndBackground.bl_idname, text="", icon="X")
@@ -819,12 +816,12 @@ def update_settings_ui(self, context, element=None):
     elif Updater.include_branches and \
             len(Updater.tags) == len(Updater.include_branch_list) and not \
             Updater.manual_only:
-        # No releases found, but still show the appropriate branch.
+        # 未找到版本，但仍显示适当的分支。
         sub_col = col.row(align=True)
         sub_col.scale_y = 1
         split = sub_col.split(align=True)
         split.scale_y = 2
-        update_now_txt = "Update directly to {}".format(
+        update_now_txt = "直接更新至{}".format(
             Updater.include_branch_list[0])
         split.operator(AddonUpdaterUpdateNow.bl_idname, text=update_now_txt)
         split = sub_col.split(align=True)
@@ -838,7 +835,7 @@ def update_settings_ui(self, context, element=None):
         split = sub_col.split(align=True)
         split.scale_y = 2
         split.operator(AddonUpdaterUpdateNow.bl_idname,
-                       text="Update now to " + str(Updater.update_version))
+                       text="立即更新至" + str(Updater.update_version))
         split = sub_col.split(align=True)
         split.scale_y = 2
         split.operator(AddonUpdaterCheckNow.bl_idname,
@@ -846,17 +843,17 @@ def update_settings_ui(self, context, element=None):
 
     elif Updater.update_ready and Updater.manual_only:
         col.scale_y = 2
-        dl_now_txt = "Download " + str(Updater.update_version)
+        dl_now_txt = "下载" + str(Updater.update_version)
         col.operator("wm.url_open",
                      text=dl_now_txt).url = Updater.website
-    else:  # i.e. that Updater.update_ready == False.
+    else: # 即 Updater.update_ready == False。
         sub_col = col.row(align=True)
         sub_col.scale_y = 1
         split = sub_col.split(align=True)
         split.enabled = False
         split.scale_y = 2
         split.operator(AddonUpdaterCheckNow.bl_idname,
-                       text="Addon is up to date")
+                       text="插件已是最新版本")
         split = sub_col.split(align=True)
         split.scale_y = 2
         split.operator(AddonUpdaterCheckNow.bl_idname,
@@ -867,18 +864,18 @@ def update_settings_ui(self, context, element=None):
         if Updater.include_branches and len(Updater.include_branch_list) > 0:
             branch = Updater.include_branch_list[0]
             col.operator(AddonUpdaterUpdateTarget.bl_idname,
-                         text="Install {} / old version".format(branch))
+                         text="安装{}或旧版本".format(branch))
         else:
             col.operator(AddonUpdaterUpdateTarget.bl_idname,
-                         text="(Re)install addon version")
-        last_date = "none found"
+                         text="重新安装插件版本")
+        last_date = "无可用备份"
         backup_path = os.path.join(Updater.stage_path, "backup")
         if "backup_date" in Updater.json and os.path.isdir(backup_path):
             if Updater.json["backup_date"] == "":
-                last_date = "Date not found"
+                last_date = "日期未知"
             else:
                 last_date = Updater.json["backup_date"]
-        backup_text = "Restore addon backup ({})".format(last_date)
+        backup_text = "恢复插件备份（{}）".format(last_date)
         col.operator(AddonUpdaterRestoreBackup.bl_idname, text=backup_text)
 
     row = box.row()
@@ -888,9 +885,9 @@ def update_settings_ui(self, context, element=None):
         row.label(text=Updater.error_msg)
     elif last_check:
         last_check = last_check[0: last_check.index(".")]
-        row.label(text="Last update check: " + last_check)
+        row.label(text="上次更新检查：" + last_check)
     else:
-        row.label(text="Last update check: Never")
+        row.label(text="上次更新检查：从未检查")
 
 
 def update_settings_ui_condensed(self, context, element=None):
@@ -899,20 +896,20 @@ def update_settings_ui_condensed(self, context, element=None):
     row = element.row()
 
     if Updater.invalid_updater is True:
-        row.label(text="Error initializing updater code:")
+        row.label(text="初始化更新器错误：")
         row.label(text=Updater.error_msg)
         return
 
     settings = get_user_preferences(context)
 
     if not settings:
-        row.label(text="Error getting updater preferences", icon='ERROR')
+        row.label(text="获取更新器首选项错误", icon='ERROR')
         return
 
     if Updater.auto_reload_post_update is False:
         saved_state = Updater.json
         if "just_updated" in saved_state and saved_state["just_updated"] is True:
-            row.label(text="Restart blender to complete update", icon="ERROR")
+            row.label(text="重启Blender以完成更新", icon="ERROR")
             return
 
     col = row.column()
@@ -940,7 +937,7 @@ def update_settings_ui_condensed(self, context, element=None):
         split = subcol.split(align=True)
         split.enabled = False
         split.scale_y = 2
-        split.operator(AddonUpdaterCheckNow.bl_idname, text="Checking...")
+        split.operator(AddonUpdaterCheckNow.bl_idname, text="检查中...")
         split = subcol.split(align=True)
         split.scale_y = 2
         split.operator(AddonUpdaterEndBackground.bl_idname, text="", icon="X")
@@ -952,7 +949,7 @@ def update_settings_ui_condensed(self, context, element=None):
         split = subcol.split(align=True)
         split.scale_y = 2
         split.operator(AddonUpdaterUpdateNow.bl_idname,
-                       text="Update directly to " + str(Updater.include_branch_list[0]))
+                       text="直接更新至" + str(Updater.include_branch_list[0]))
         split = subcol.split(align=True)
         split.scale_y = 2
         split.operator(AddonUpdaterCheckNow.bl_idname, text="", icon="FILE_REFRESH")
@@ -963,21 +960,21 @@ def update_settings_ui_condensed(self, context, element=None):
         split = subcol.split(align=True)
         split.scale_y = 2
         split.operator(AddonUpdaterUpdateNow.bl_idname,
-                       text="Update now to " + str(Updater.update_version))
+                       text="立即更新至" + str(Updater.update_version))
         split = subcol.split(align=True)
         split.scale_y = 2
         split.operator(AddonUpdaterCheckNow.bl_idname, text="", icon="FILE_REFRESH")
 
     elif Updater.update_ready is True and Updater.manual_only is True:
         col.scale_y = 2
-        col.operator("wm.url_open", text="Download " + str(Updater.update_version)).url = Updater.website
+        col.operator("wm.url_open", text="下载" + str(Updater.update_version)).url = Updater.website
     else:
         subcol = col.row(align=True)
         subcol.scale_y = 1
         split = subcol.split(align=True)
         split.enabled = False
         split.scale_y = 2
-        split.operator(AddonUpdaterCheckNow.bl_idname, text="Addon is up to date")
+        split.operator(AddonUpdaterCheckNow.bl_idname, text="插件已是最新版本")
         split = subcol.split(align=True)
         split.scale_y = 2
         split.operator(AddonUpdaterCheckNow.bl_idname, text="", icon="FILE_REFRESH")
@@ -992,9 +989,9 @@ def update_settings_ui_condensed(self, context, element=None):
         row.label(text=Updater.error_msg)
     elif lastcheck != "" and lastcheck is not None:
         lastcheck = lastcheck[0: lastcheck.index(".")]
-        row.label(text="Last check: " + lastcheck)
+        row.label(text="上次检查：" + lastcheck)
     else:
-        row.label(text="Last check: Never")
+        row.label(text="上次检查：从未检查")
 
 
 def skip_tag_function(self, tag):
@@ -1041,7 +1038,7 @@ classes = (
 
 def register(bl_info):
     if Updater.error:
-        print("Exiting updater registration, " + Updater.error)
+        print("正在退出更新器注册，" + Updater.error)
         return
 
     Updater.clear_state()
