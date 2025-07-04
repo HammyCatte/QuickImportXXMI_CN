@@ -123,9 +123,9 @@ class QuickImportSettings(bpy.types.PropertyGroup):
         description="启用顶点自动按距离合并"
     )#type: ignore 
     flip_mesh: BoolProperty(
-        name="Flip Mesh",
+        name="翻转网格",
         default=False,
-        description="Flips mesh over x-axis on import"
+        description="导入时沿x轴翻转网格"
     ) #type: ignore 
     reset_rotation: BoolProperty(
         name="重置旋转(ZZZ)",
@@ -170,7 +170,7 @@ class QuickImportSettings(bpy.types.PropertyGroup):
         update=update_create_mesh_collection
     ) #type: ignore
     import_diffuse: BoolProperty(
-        name="Diffuse",
+        name="DiffuseMap",
         default=True,
         description="导入Diffuse贴图"
     ) #type: ignore 
