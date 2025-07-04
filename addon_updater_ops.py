@@ -1046,7 +1046,7 @@ def register(bl_info):
     Updater.private_token = None
     Updater.user = "Seris0"
     Updater.repo = "QuickImportXXMI"
-    Updater.website = "https://github.com/Seris0/QuickImportXXMI/releases"
+    Updater.website = "https://github.com/HammyCatte/QuickImportXXMI_CN/releases"
     Updater.subfolder_path = ""
     Updater.current_version = bl_info["version"]
     Updater.verbose = False
