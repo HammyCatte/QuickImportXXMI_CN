@@ -1,24 +1,24 @@
-# QuickImportXXMI Addon
+# QuickImportXXMI 插件
 
-The addon allows you to:  
-- Automatic import of textures  
-- Flip mesh  
-- Clean mesh  
-- Import faces  
-- Import armatures  
-- Toolbox  
-- More
+该插件功能包括：  
+- 自动导入材质贴图  
+- 翻转模型网格  
+- 清理模型网格  
+- 自动导入面部  
+- 自动导入骨架  
+- 工具箱  
+- 更多功能
 
-## How to Use
+## 使用方法
 
-1. Enable the addon through Blender preferences.  
-2. Use the Quick Import panel in the **XXMI Scripts** tab to configure and execute the quick import.
+1. 通过 Blender 用户偏好设置启用该插件。  
+2. 在 **XXMI工具箱** 选项卡中的 快速导入 面板中配置参数并执行快速导入。
 
-## Authors
+## 作者
 
 - Gustav0  
 - LeoTorreZ  
 
-## Acknowledgements
+## 特别致谢
 
-Special thanks to Silent for providing various scripts and 3D frame analyses, and LeoTools for QuickImport.
+特别感谢 Silent 提供的各类脚本与 3D 帧分析，以及 LeoTools 提供的 QuickImport 工具。
